@@ -18,7 +18,25 @@ export class UsersService {
   }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      include: {
+        comments: {
+          include: {
+            post: true,
+          },
+        },
+        follows: {
+          include: {
+            user: true,
+          },
+        },
+        posts: {
+          include: {
+            author: true,
+          },
+        },
+      },
+    });
   }
 
   findOne(id: number) {
