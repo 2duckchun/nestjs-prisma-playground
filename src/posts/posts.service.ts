@@ -11,7 +11,7 @@ export class PostsService {
       data: {
         title: createPostDto.title,
         content: createPostDto.content,
-        authorId: +createPostDto.authorId,
+        authorId: createPostDto.authorId,
       },
     });
   }
