@@ -11,12 +11,21 @@ export class PostsService {
       data: {
         title: createPostDto.title,
         content: createPostDto.content,
-        authorId: createPostDto.authorId,
+        authorId: +createPostDto.authorId,
       },
     });
   }
 
   findAll() {
-    return this.prisma.post.findMany();
+    return this.prisma.post.findMany({
+      include: {
+        author: {
+          select: {
+            email: true,
+            name: true,
+          },
+        },
+      },
+    });
   }
 }
