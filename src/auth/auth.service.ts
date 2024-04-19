@@ -12,6 +12,12 @@ export class AuthService {
     private readonly userService: UsersService,
   ) {}
 
+  /**
+   * 이메일 기반의 ID를 DB에 등록시켜 회원가입한다.
+   * 가입이 이루어지면 자동으로 로그인을 시도한다.
+   * @param user
+   * @returns {newUser} username, accessToken, refreshToken
+   */
   async registerWithEmail(user: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const newUser = await this.userService.create({
@@ -21,6 +27,12 @@ export class AuthService {
     return this.loginUser(newUser);
   }
 
+  /**
+   * 로그인 성공시 유저에게 전달할 객체를 만든다.
+   * 객체에는 username, accessToken, refreshToken이 키값으로 주어진다.
+   * @param user
+   * @returns {userData} username, accessToken, refreshToken
+   */
   loginUser(user: Pick<User, 'id' | 'email' | 'name'>) {
     return {
       username: user.name,
@@ -29,6 +41,13 @@ export class AuthService {
     };
   }
 
+  /**
+   * 토큰을 만든다.
+   * 리프레시 토큰은 3600초, 엑세스 토큰은 600초의 만료시간이 주어진다.
+   * @param user
+   * @param isRefreshToken
+   * @returns {payload} email, sub, type
+   */
   signToken(user: Pick<User, 'id' | 'email'>, isRefreshToken: boolean) {
     const payload = {
       email: user.email,
@@ -42,11 +61,23 @@ export class AuthService {
     });
   }
 
+  /**
+   * 이메일 로그인을 시도한다.
+   * 전달받은 email, password로 DB 내 저장된 계정을 대조하여 로그인한다.
+   * @param user
+   * @returns {userData} username, accessToken, refreshToken
+   */
   async loginWithEmail(user: Pick<User, 'email' | 'password'>) {
     const existingUser = await this.authenticateWithEmailAndPassword(user);
     return this.loginUser(existingUser);
   }
 
+  /**
+   * headers.authorization의 토큰을 추출한다.
+   * @param header
+   * @param isBearer
+   * @returns string
+   */
   extractTokenFromHeader(header: string, isBearer: boolean) {
     const splitToken = header.split(' ');
     const prefix = isBearer ? 'Bearer' : 'Basic';
@@ -57,6 +88,11 @@ export class AuthService {
     return token;
   }
 
+  /**
+   * BasicToken의 <id>:<email> 형태의 base64 버퍼를 해독하여 리턴한다.
+   * @param base64String
+   * @returns email, password
+   */
   decodedBasicToken(base64String: string) {
     const decoded = Buffer.from(base64String, 'base64').toString('utf-8');
     console.log(decoded);
@@ -69,6 +105,12 @@ export class AuthService {
     };
   }
 
+  /**
+   * 아이디와 패스워드를 인증한다.
+   * 인증이 완료되면 DB에 저장된 유저의 정보를 그대로 반환한다.
+   * @param user
+   * @returns id, email, name, password
+   */
   async authenticateWithEmailAndPassword(
     user: Pick<User, 'email' | 'password'>,
   ) {
