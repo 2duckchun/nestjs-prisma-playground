@@ -17,6 +17,14 @@ export class UsersService {
     });
   }
 
+  async getUserByEmail(email: string) {
+    return await this.prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+  }
+
   findAll() {
     return this.prisma.user.findMany({
       include: {
